@@ -1,15 +1,29 @@
-/* MEC 441 Senior Design Program 
+/*
+ *******************************
+   MEC 441 Senior Design Program 
    April, 28 2015 Version 1
-*/
+ *********************************
 
-/* Components called in this program
+ ********************************
+        Change History
+ ********************************
+Version 1 4/28/15
+- Created base version of the program
+- Need to add a value for the variable "volt2sec"
+- Need to add any modification factors in the calculation of pitchVal, rollVal, yawVal so
+  that pitchVal, rollVal, and yawVal correspond to the required degrees of motion
+
+ *********************************
+        End Change History
+ *********************************
+    
+Components called in this program
    -Potentiometers (x3)
    -Motors (x3)
    -Motor Shield (x1)
-*/
 
-/* Include the Wire.h byte transmission library and the 
-   Adafruit_MotorShield.h motor shield control library
+Include the Wire.h byte transmission library and the 
+Adafruit_MotorShield.h motor shield control library
 */
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
@@ -32,8 +46,8 @@ float pitchVal, rollVal, yawVal;
 
 /* Initialize a variable to get motor run time from potentiometer volage
    runTime is the final result from this relation and is assumed to be linear
-   voltstoseconds converts potentiometer voltage to the number of degrees that a motor moves
-   via the time that it takes for the motor to get to that position (WILL NEED CALIBARRATION)
+   volt2sec converts potentiometer voltage to the number of degrees that a motor moves
+   via the time that it takes for the motor to get to that position
    
    This will be in units of milliseconds probably
 */
@@ -41,9 +55,6 @@ float pitchTime, yawTime, rollTime;
 
 /* Initialize a variable that linearly relates voltage to the time it takes for a motor to move
    a certain number of degrees
-   
-   May need to modify the variable "volt2sec" in each of the pitch/roll/ yaw Time equations to 
-   match the degree of motion for each (i.e yawTime = volt2sec/180 ; rollTime = volt2sec/360; etc)
 */
 float volt2sec;
 
