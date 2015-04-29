@@ -66,7 +66,7 @@ Adafruit_DCMotor *yawMotor = AFMS.getMotor(3);
 
 void setup() {
  
-// Begin running the motor shield at the efault frequency of 1.6kHz
+// Begin running the motor shield at the default frequency of 1.6kHz
   AFMS.begin();
   
 // Initialize the motors at 200 speed  
