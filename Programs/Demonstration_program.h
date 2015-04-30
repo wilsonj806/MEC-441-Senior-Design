@@ -45,5 +45,7 @@ while (byte i=0, i<3, i++){
  motorOne-> run(BACKWARD);
  delay(500);
  motorOne-> run(RELEASE);
+ 
+ delay(1000);
 } 
 }
