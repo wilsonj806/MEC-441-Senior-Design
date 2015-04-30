@@ -43,9 +43,7 @@ void setup(){
 
 // Begin running the motor shield at default frequency  
  AFMS.begin();
- pitchMotor-> setSpeed(200);
- rollMotor-> setSpeed(200);
- yawMotor-> setSpeed(200);
+ motorOne->setSpeed(200)
 }
 
 void loop() {
