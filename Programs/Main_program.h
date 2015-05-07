@@ -1,101 +1,84 @@
 /*
  *******************************
-   MEC 441 Senior Design Program 
-    April 28, 2015 Version 1
- *********************************
+     MEC 441 Senior Desgin
+       Control program
+     Version 1 May 5, 2015
+ *******************************
 
- ********************************
-        Change History
- ********************************
-Version 1 4/28/15
-- Created base version of the program
-- Need to add a value for the variable "volt2sec"
-- Need to add any modification factors in the calculation of pitchVal, rollVal, yawVal so
-  that pitchVal, rollVal, and yawVal correspond to the required degrees of motion
-
- *********************************
-        End Change History
- *********************************
-    
-Components called in this program
-   -Potentiometers (x3)
-   -Motors (x3)
-   -Motor Shield (x1)
-
-Include the Wire.h byte transmission library and the 
-Adafruit_MotorShield.h motor shield control library
-*/
-#include <Wire.h>
+ ****************************
+       Change History
+ ****************************
+ Version 1 - 5/5/15
+ - Created the base version of the program
+ Version 2 - 5/6/15
+ - Added the curve fit of desired angle to motor run time and voltage
+ - Need to adjust the pitchtoangle relation for the max range of motion we want
+ ****************************
+      End Change History
+ ****************************
+  
+  This program controls the motors with potentiometers
+  
+*/ 
 #include <Adafruit_MotorShield.h>
+#include <Wire.h>
+const byte pitchPote = 0;
+const byte rollPote = 1;
+const byte yawPote = 3;
 
-/* Create the motor shield object with the default I2C address 
-   Can stack motor shields but would have to define them with different addressses
-*/
+int pitchmod = 1;
+int rollmod = 2;
+int pitchraw, rollraw, yawraw;
+float pitchval, rollval, yawval ;
+long pitchtoangle,rolltoangle,yawtoangle;
+
+// Start the motor shield object and the motor
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-
-// Initialize the pitch, roll, yaw potentiometers that are connected to their respective pins
-
-#define pitchPote = 0;
-#define rollPote = 1;
-#define yawPote= 2;
-
-/* Initialize variables to store the input from the potentiometer pins
-   Potentiometer inputs are from 0-5 volts
-*/
-float pitchVal, rollVal, yawVal;
-
-/* Initialize a variable to get motor run time from potentiometer volage
-   runTime is the final result from this relation and is assumed to be linear
-   volt2sec converts potentiometer voltage to the number of degrees that a motor moves
-   via the time that it takes for the motor to get to that position
-   
-   This will be in units of milliseconds probably
-*/
-float pitchTime, yawTime, rollTime;
-
-/* Initialize a variable that linearly relates voltage to the time it takes for a motor to move
-   a certain number of degrees
-*/
-float volt2sec;
-
-// Start variables to call the motors
 Adafruit_DCMotor *pitchMotor = AFMS.getMotor(1);
 Adafruit_DCMotor *rollMotor = AFMS.getMotor(2);
 Adafruit_DCMotor *yawMotor = AFMS.getMotor(3);
 
-
 void setup() {
- 
-// Begin running the motor shield at the default frequency of 1.6kHz
-  AFMS.begin();
-  
-// Initialize the motors at 200 speed  
-  pitchMotor-> setSpeed(200);
-  rollMotor-> setSpeed(200);
-  yawMotor-> setSpeed(200);
+AFMS.begin();
+Serial.begin(115200);
+
+pitchMotor -> setSpeed(200);
+rollMotor -> setSpeed(200);
+yawMotor -> setSpeed(200);
 }
 
 void loop() {
-// Reads the voltage from the potentiometer and converts it from bits to Volts
-  pitchVal = analogRead(pitchPote)*0.0049;
-  rollVal = analogRead(rollPote)*0.0049;
-  yawVal = analogRead(yawPote)*0.049;
-  
-// Converts volts to a motor run time
-  pitchTime = volt2sec * pitchVal;
-  yawTime = volt2sec * yawVal;
-  rollTime = volt2sec * rollVal;
+long pitchtime = potentiometercalibration(pitchPote, 0, 0);
+long rolltime = potentiometercalibration(0,rollPote,0);
+long yawtime = potentiometercalibration(0,0, yawPote);
 
-// Runs the motors
-  pitchMotor->run(FORWARD);
-  delay(pitchTime);
-  pitchMotor->run(RELEASE);
 
-  rollMotor->run(FORWARD);
-  delay(rollTime);
-  rollMotor->run(RELEASE);
 
-  yawMotor->run(FORWARD);
-  delay(yawTime);
-  yawMotor->run(RELEASE);
 }
+
+int potentiometercalibration(const byte pitchPote,const byte rollPote,const byte yawPote){
+pitchraw = analogRead(pitchPote);
+rollraw = analogRead(rollPote);
+yawraw = analogRead(yawPote);
+
+pitchval = pitchraw * 0.0049;
+rollval = rollraw * 0.0049;
+yawval = yawraw * 0.0049;
+pitchtoangle = (1.227-0.24491*pitchval)*1000;
+rolltoangle = (1.227-0.24491*rollval)*1000;
+yawtoangle =(1.227-0.24491*yawval)*1000;
+long pitchreturn = pow(-1,-6)*pow(pitchtoangle,3)-pow(6,-6)*pow(pitchtoangle,2)+0.028*pitchtoangle-0.0002; 
+long rollreturn = pow(-1,-6)*pow(rolltoangle,3)-pow(6,-6)*pow(rolltoangle,2)+0.028*rolltoangle-0.0002;
+long yawreturn = pow(-1,-6)*pow(yawtoangle,3)-pow(6,-6)*pow(yawtoangle,2)+0.028*yawtoangle-0.0002;
+
+Serial.println("pitch conversion to time");
+Serial.println(pitchreturn);
+Serial.println("roll conversion to time");
+Serial.println(rollreturn);
+Serial.println("yaw conversion to time");
+Serial.println(yawreturn);
+return yawreturn;
+return rollreturn;
+return pitchreturn;
+}
+
