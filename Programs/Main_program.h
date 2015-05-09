@@ -13,6 +13,10 @@
  Version 2 - 5/6/15
  - Added the curve fit of desired angle to motor run time and voltage
  - Need to adjust the pitchtoangle relation for the max range of motion we want
+ Version 3 - 5/7/15
+ - Redid the curve fit, did not need a polynomial
+ - Separated the potentiometer calibration for each movement
+ - Check the program for rounding errors and change delay(); to delaymicros(); if need be
  ****************************
       End Change History
  ****************************
@@ -29,12 +33,13 @@ const byte yawPote = 2;
 int pitchmod = 1;
 int rollmod = 2;
 int pitchraw, rollraw, yawraw;
-float prevpitchval = 0;
-float prevrollval = 0;
-float prevyawval = 0;
-float pitchval, rollval, yawval, yawdiff,rolldiff,pitchdiff ;
-float pitchtoangle,rolltoangle,yawtoangle;
-
+float pitchval, rollval, yawval, yawdiff,rolldiff,pitchdiff;//, prevpitchval, prevrollval, prevyawval ;
+long pitchtime,rolltime,yawtime;
+byte count = 0;
+byte i = 1;
+ float prevpitchval = 5.01;
+float prevrollval = 5.01;
+float prevyawval = 5.01;
 // Start the motor shield object and the motor
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *pitchMotor = AFMS.getMotor(1);
@@ -44,84 +49,131 @@ Adafruit_DCMotor *yawMotor = AFMS.getMotor(4);
 
 void setup() {
 AFMS.begin();
-//Serial.begin(9600);
+Serial.begin(9600);
 
 pitchMotor -> setSpeed(200);
 rollMotor1 -> setSpeed(200);
 rollMotor2 -> setSpeed(200);
-yawMotor -> setSpeed(200);
+
 }
 
 void loop() {
-long pitchtime = potentiometercalibration(pitchPote, 0, 0);
-long rolltime = potentiometercalibration(0,rollPote,0);
-long yawtime = potentiometercalibration(0,0, yawPote);
-//Serial.println("pitch time");
-//Serial.println(pitchtime);
-//Serial.println("roll time");
-//Serial.println(rolltime);
-//Serial.println("yaw time");
-//Serial.println(yawtime);
-//if (pitchdiff <0){
-//  pitch
-if (yawdiff>0){
-yawMotor->run(FORWARD);
+ i=0;
+
+  while (i <2){
+long pitchtime = pitchpotentiometercalibration(pitchPote, prevpitchval);
+long rolltime = rollpotentiometercalibration(rollPote,prevrollval);
+long yawtime = yawpotentiometercalibration(yawPote,prevyawval);
+Serial.println("pitch diff");
+Serial.println(pitchdiff);
+Serial.println("roll time");
+Serial.println(rolltime);
+Serial.println("yaw time");
+Serial.println(yawtime);
+prevpitchval = pitchval;
+prevyawval = yawval;
+prevrollval = rollval;
+
+
+if (yawdiff<0){
+yawMotor -> setSpeed(200);
+yawMotor->run(BACKWARD);
 delay(yawtime);
 yawMotor->run(RELEASE);
 }
-else if (yawdiff<0){
-yawMotor-> run(BACKWARD);
+else if (yawdiff>0){
+yawMotor -> setSpeed(200);
+yawMotor-> run(FORWARD);
 delay(yawtime);
 yawMotor->run(RELEASE);
 }
+else if(yawdiff ==0){
+count = count +1;
 }
-int potentiometercalibration(const byte pitchPote,const byte rollPote,const byte yawPote){
+
+if (pitchdiff<0){
+pitchMotor -> setSpeed(200);
+pitchMotor->run(FORWARD);
+delay(pitchtime);
+pitchMotor->run(RELEASE);
+
+}
+// pitch diff might alwasys be greater than 0
+else if (pitchdiff>0){
+pitchMotor -> setSpeed(200);
+pitchMotor-> run(BACKWARD);
+delay(pitchtime);
+pitchMotor->run(RELEASE);
+
+}
+else if(pitchdiff ==0){
+count = count +1;
+}
+
+if (rolldiff<0){
+rollMotor1 -> setSpeed(200);
+rollMotor1->run(FORWARD);
+rollMotor2 -> setSpeed(200);
+rollMotor2 -> run(BACKWARD);
+delay(rolltime);
+rollMotor1->run(RELEASE);
+rollMotor2 ->run(RELEASE);
+}
+// pitch diff might alwasys be greater than 0
+else if (rolldiff>0){
+rollMotor1 -> setSpeed(200);
+rollMotor1->run(FORWARD);
+rollMotor2 -> setSpeed(200);
+rollMotor2 -> run(BACKWARD);
+delay(rolltime);
+rollMotor1->run(RELEASE);
+rollMotor2 ->run(RELEASE);
+}
+else if(rolldiff ==0){
+count = count +1;
+}
+
+else if(count >5){
+  yawMotor-> setSpeed(0);
+  pitchMotor -> setSpeed(0);
+  rollMotor1 -> setSpeed(0);
+  rollMotor2 -> setSpeed(0);
+  i=3;
+}
+
+}
+
+}
+
+
+
+int pitchpotentiometercalibration(const byte pitchPote, float prevpitchval){
 pitchraw = analogRead(pitchPote);
-rollraw = analogRead(rollPote);
-yawraw = analogRead(yawPote);
-
 pitchval = pitchraw * 0.0049;
-rollval = rollraw * 0.0049;
-yawval = yawraw * 0.0049;
-
 pitchdiff= pitchval-prevpitchval;
-rolldiff = rollval - prevrollval;
-yawdiff = yawval - prevyawval;
-pitchtoangle = (1.227-0.24491*pitchval);
-rolltoangle = (1.227-0.24491*rollval);
-yawtoangle =(1.227-0.24491*yawval);
-float pitchreturn = 1000*(pow(-1,-6)*pow(pitchtoangle,3)-pow(6,-6)*pow(pitchtoangle,2)+0.028*pitchtoangle); 
-float rollreturn = 1000*(pow(-1,-6)*pow(rolltoangle,3)-pow(6,-6)*pow(rolltoangle,2)+0.028*rolltoangle);
-float yawreturn = (pow(-1,-6)*pow(yawtoangle,3)-pow(6,-6)*pow(yawtoangle,2)+0.028*yawtoangle)*1000;
+pitchtime = 1000*(0.05549*pitchval);
 
-/*Serial.println("pitch raw");
-Serial.println(pitchraw);
-Serial.println("roll raw");
-Serial.println(rollraw);
-Serial.println("yaw raw");
-Serial.println(yawraw);
-
-Serial.println("pitch convert to val");
-Serial.println(pitchtoangle);
-Serial.println("roll conversion to val");
-Serial.println(rolltoangle);
-Serial.println("yaw conversion to val");
-Serial.println(yawtoangle);
-
-
-Serial.println("pitch conversion to time");
-Serial.println(pitchreturn);
-Serial.println("roll conversion to time");
-Serial.println(rollreturn);
-Serial.println("yaw conversion to time");
-Serial.println(yawreturn);
-delay(500);
-*/
-return yawreturn;
-return rollreturn;
-return pitchreturn;
+return pitchtime;
 return pitchdiff;
-return rolldiff;
-return yawdiff;
+return pitchval;
 }
 
+int rollpotentiometercalibration(const byte rollPote, float prevrollval){
+rollraw = analogRead(rollPote);
+rollval = rollraw * 0.0049;
+rolldiff = rollval - prevrollval;
+rolltime = 1000*(0.24491*rollval);
+return rolltime;
+return rolldiff;
+return rollval;
+}
+
+int yawpotentiometercalibration(const byte yawPote, float prevyawval){
+yawraw = analogRead(yawPote);
+yawval = yawraw * 0.0049;
+yawdiff = yawval - prevyawval;
+yawtime =1000*(0.24491*yawval);
+return yawtime;
+return yawdiff;
+return yawval;
+}
