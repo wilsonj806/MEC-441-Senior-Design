@@ -2,7 +2,7 @@
  *******************************
      MEC 441 Senior Desgin
        Control program
-     Version 1 May 5, 2015
+     Version 4 May 15, 2015
  *******************************
 
  ****************************
@@ -17,6 +17,13 @@
  - Redid the curve fit, did not need a polynomial
  - Separated the potentiometer calibration for each movement
  - Check the program for rounding errors and change delay(); to delaymicros(); if need be
+ - Can either:
+   a) change the variable type of pitchdiff, rolldiff, yawdiff
+   b) add a multiplier when calculating pitchtime, rolltime, yawtime
+ Version 4 - 5/15/15
+ - Changed "float" variables to "double" variables
+ - Changed the run time from milliseconds to microseconds
+ - Adjusted voltage to time relations accordingly to account for milliseconds
  ****************************
       End Change History
  ****************************
@@ -33,13 +40,13 @@ const byte yawPote = 2;
 int pitchmod = 1;
 int rollmod = 2;
 int pitchraw, rollraw, yawraw;
-float pitchval, rollval, yawval, yawdiff,rolldiff,pitchdiff;//, prevpitchval, prevrollval, prevyawval ;
+double pitchval, rollval, yawval, yawdiff,rolldiff,pitchdiff;//, prevpitchval, prevrollval, prevyawval ;
 long pitchtime,rolltime,yawtime;
 byte count = 0;
 byte i = 1;
- float prevpitchval = 5.01;
-float prevrollval = 5.01;
-float prevyawval = 5.01;
+double prevpitchval = 5.01;
+double prevrollval = 5.01;
+double prevyawval = 5.01;
 // Start the motor shield object and the motor
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *pitchMotor = AFMS.getMotor(1);
@@ -78,13 +85,13 @@ prevrollval = rollval;
 if (yawdiff<0){
 yawMotor -> setSpeed(200);
 yawMotor->run(BACKWARD);
-delay(yawtime);
+delayMicroseconds(yawtime);
 yawMotor->run(RELEASE);
 }
 else if (yawdiff>0){
 yawMotor -> setSpeed(200);
 yawMotor-> run(FORWARD);
-delay(yawtime);
+delayMicroseconds(yawtime);
 yawMotor->run(RELEASE);
 }
 else if(yawdiff ==0){
@@ -94,7 +101,7 @@ count = count +1;
 if (pitchdiff<0){
 pitchMotor -> setSpeed(200);
 pitchMotor->run(FORWARD);
-delay(pitchtime);
+delayMicroseconds(pitchtime);
 pitchMotor->run(RELEASE);
 
 }
@@ -102,7 +109,7 @@ pitchMotor->run(RELEASE);
 else if (pitchdiff>0){
 pitchMotor -> setSpeed(200);
 pitchMotor-> run(BACKWARD);
-delay(pitchtime);
+delayMicroseconds(pitchtime);
 pitchMotor->run(RELEASE);
 
 }
@@ -115,7 +122,7 @@ rollMotor1 -> setSpeed(200);
 rollMotor1->run(FORWARD);
 rollMotor2 -> setSpeed(200);
 rollMotor2 -> run(BACKWARD);
-delay(rolltime);
+delayMicroseconds(rolltime);
 rollMotor1->run(RELEASE);
 rollMotor2 ->run(RELEASE);
 }
@@ -125,7 +132,7 @@ rollMotor1 -> setSpeed(200);
 rollMotor1->run(FORWARD);
 rollMotor2 -> setSpeed(200);
 rollMotor2 -> run(BACKWARD);
-delay(rolltime);
+delayMicroseconds(rolltime);
 rollMotor1->run(RELEASE);
 rollMotor2 ->run(RELEASE);
 }
@@ -147,9 +154,9 @@ else if(count >5){
 
 
 
-int pitchpotentiometercalibration(const byte pitchPote, float prevpitchval){
+int pitchpotentiometercalibration(const byte pitchPote, double prevpitchval){
 pitchraw = analogRead(pitchPote);
-pitchval = pitchraw * 0.0049;
+pitchval = pitchraw * 0.0049*1000;
 pitchdiff= pitchval-prevpitchval;
 pitchtime = 1000*(0.05549*pitchval);
 
@@ -158,9 +165,9 @@ return pitchdiff;
 return pitchval;
 }
 
-int rollpotentiometercalibration(const byte rollPote, float prevrollval){
+int rollpotentiometercalibration(const byte rollPote, double prevrollval){
 rollraw = analogRead(rollPote);
-rollval = rollraw * 0.0049;
+rollval = rollraw * 0.0049*1000;
 rolldiff = rollval - prevrollval;
 rolltime = 1000*(0.24491*rollval);
 return rolltime;
@@ -168,9 +175,9 @@ return rolldiff;
 return rollval;
 }
 
-int yawpotentiometercalibration(const byte yawPote, float prevyawval){
+int yawpotentiometercalibration(const byte yawPote, double prevyawval){
 yawraw = analogRead(yawPote);
-yawval = yawraw * 0.0049;
+yawval = yawraw * 0.0049*1000;
 yawdiff = yawval - prevyawval;
 yawtime =1000*(0.24491*yawval);
 return yawtime;
