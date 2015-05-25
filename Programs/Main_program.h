@@ -2,7 +2,7 @@
  *******************************
      MEC 441 Senior Desgin
        Control program
-     Version 4 May 15, 2015
+     Version 5 May 16, 2015
  *******************************
 
  ****************************
@@ -33,6 +33,13 @@
    a) add LEDs to correspond with the motors pitching, rolling and yawing forwards or backwards
    b) check the motor shield specs for which Arduino pins are used for motor control so you can plug the LEDs in the right way
      + might not need to since it's I2C and might not even use those pins
+ 
+ For future reference - 5/17/2015
+ - Replace "delayMicroseconds" with "delay" since you already dealt with the roundin error already
+ - Combine calibration curves with encoders and etc. for testing
+ - Troubleshoot as to why only one of the two roll motors moves
+  * Possibly has to do with I2C being a serial bus
+   -> If you tell it to turn one motor on, it's going to do that until you tell it to stop (can't have simultaneous signals being sent from the master device)
  ****************************
       End Change History
  ****************************
