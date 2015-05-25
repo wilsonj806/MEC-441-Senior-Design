@@ -37,6 +37,7 @@
  For future reference - 5/17/2015
  - Replace "delayMicroseconds" with "delay" since you already dealt with the roundin error already
  - Combine calibration curves with encoders and etc. for testing
+ - Turns out the variable type, "double" takes longer to calculate stuff than "float"
  - Troubleshoot as to why only one of the two roll motors moves
   * Possibly has to do with I2C being a serial bus
    -> can't have simultaneous signals being sent from the master device in a serial bus
