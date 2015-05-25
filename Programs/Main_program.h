@@ -33,7 +33,7 @@
    a) add LEDs to correspond with the motors pitching, rolling and yawing forwards or backwards
    b) check the motor shield specs for which Arduino pins are used for motor control so you can plug the LEDs in the right way
      + might not need to since it's I2C and might not even use those pins
- 
+ - Also the conditional case structure in Line 176 or so is missing a delay
  For future reference - 5/17/2015
  - Replace "delayMicroseconds" with "delay" since you already dealt with the roundin error already
  - Combine calibration curves with encoders and etc. for testing
