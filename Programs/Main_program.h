@@ -39,7 +39,7 @@
  - Combine calibration curves with encoders and etc. for testing
  - Troubleshoot as to why only one of the two roll motors moves
   * Possibly has to do with I2C being a serial bus
-   -> If you tell it to turn one motor on, it's going to do that until you tell it to stop (can't have simultaneous signals being sent from the master device)
+   -> can't have simultaneous signals being sent from the master device in a serial bus
  ****************************
       End Change History
  ****************************
