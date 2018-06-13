@@ -1,4 +1,5 @@
-# MEC-441-Senior-Design-Programs
-Self explanatory, will include the main program, calibration programs and etc
+### MEC-441-Senior-Design-Programs
 
-The project involves creating a 3-axis gimbal that can pitch, roll and yaw
+Programs for my senior capstone projects. Calibration programs, test programs, and the main program are included.
+
+Programmed using Arduino, which is based on C/ C++.
